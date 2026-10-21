@@ -231,3 +231,10 @@ th{background:var(--koyu);color:#fff;font-weight:600}
 .onemli{margin-top:18px;padding:14px 16px;background:var(--kart);border-left:4px solid var(--vurgu-koyu);border-radius:0 var(--r) var(--r) 0}
 .blok.koyu .bolum-giris{color:var(--koyu-gri)}
 .galeri+h2,.galeri+.sss{margin-top:40px}
+
+/* iç sayfa başlık alanı: metin + markalı afiş */
+.sb-izgara{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:40px;align-items:center}
+.sb-metin{min-width:0}
+.sb-gorsel{margin:0;min-width:0}
+.sb-img{width:100%;aspect-ratio:1690/931;object-fit:cover;border-radius:var(--r);box-shadow:0 18px 40px -18px rgba(28,33,36,.45)}
+@media (max-width:900px){.sb-izgara{grid-template-columns:1fr;gap:24px}}

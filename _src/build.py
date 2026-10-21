@@ -58,7 +58,10 @@ GORSEL = [
  ("sap-yapimi", "Merdiven sahanlığında kalıp profilleriyle şap yapımı"),
  ("sapci", "Dükkan önü açık alanda şap dökümü, pompa hortumu ve perdah makinesi"),
  ("sapci2", "Tuğla duvar dibine kadar perdahlanmış şap"),
+ ("maras-sapci-sitesi", f"Maraş Şapçı: Kahramanmaraş'ın 11 ilçesinde makineli şap, telefon {TEL_G}"),
+ ("maras-sap-ustasi", f"Maraş Şapçı şap ustası ıslak şapı mastarla düzeltiyor, telefon {TEL_G}"),
 ]
+BANNER = ["maras-sapci-sitesi", "maras-sap-ustasi"]
 OLCU = {}
 
 def gorselleri_hazirla():
@@ -69,11 +72,19 @@ def gorselleri_hazirla():
         im = Image.open(k); OLCU[ad] = im.size
         if not os.path.exists(t) or os.path.getmtime(t) < os.path.getmtime(k):
             im2 = im.convert("RGB"); im2.thumbnail((640, 2000)); im2.save(t, "WEBP", quality=74, method=5)
+        if ad in BANNER:
+            t2 = os.path.join(KOK, f"images/k/{ad}-1200.webp")
+            if not os.path.exists(t2) or os.path.getmtime(t2) < os.path.getmtime(k):
+                im3 = im.convert("RGB"); im3.thumbnail((1200, 2000)); im3.save(t2, "WEBP", quality=78, method=6)
 
 FP = ' fetchpriority="high"'
 AC = ' aria-current="page"'
 def resim(ad, sinif="", yukle="lazy", sizes="(max-width: 700px) 100vw, 50vw"):
     alt = dict(GORSEL)[ad]; w, h = OLCU[ad]
+    if ad in BANNER:
+        return (f'<img class="{sinif}" src="{ic(f"images/k/{ad}-1200.webp")}" srcset="{ic(f"images/k/{ad}-640.webp")} 640w, '
+                f'{ic(f"images/k/{ad}-1200.webp")} 1200w" sizes="{sizes}" width="{w}" height="{h}" alt="{e(alt)}" loading="{yukle}"'
+                f'{FP if yukle == "eager" else ""} decoding="async">')
     return (f'<img class="{sinif}" src="{ic(f"images/k/{ad}-640.webp")}" srcset="{ic(f"images/k/{ad}-640.webp")} 640w, '
             f'{ic(f"images/{ad}.webp")} {w}w" sizes="{sizes}" width="{w}" height="{h}" alt="{e(alt)}" loading="{yukle}"'
             f'{FP if yukle == "eager" else ""} decoding="async">')
@@ -136,7 +147,11 @@ def bas(yol, title, desc, sema, ogimg="maras-sapci", onyukle=""):
 <meta property="og:type" content="website"><meta property="og:locale" content="tr_TR">
 <meta property="og:site_name" content="{AD}"><meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}">
-<meta property="og:image" content="{SITE}images/{ogimg}.webp">
+<meta property="og:image" content="{SITE}images/{("k/" + ogimg + "-1200") if ogimg in BANNER else ogimg}.webp">
+<meta property="og:image:width" content="{1200 if ogimg in BANNER else OLCU.get(ogimg, (1500, 630))[0]}"><meta property="og:image:height" content="{661 if ogimg in BANNER else OLCU.get(ogimg, (1500, 630))[1]}">
+<meta property="og:image:alt" content="{e(dict(GORSEL).get(ogimg, title))}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="theme-color" content="#23292C">{pre}
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
@@ -266,7 +281,7 @@ def anasayfa():
     sema = [isletme(), {"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": AD, "inLanguage": "tr"},
             sss_sema(sss)]
     surec = "".join(f"<li><h3>{a}</h3><p>{p}</p></li>" for a, p in SUREC)
-    return bas("", t, d, sema, "k/hero-1500", onyukle="images/k/hero-1500.webp") + f"""
+    return bas("", t, d, sema, "maras-sapci-sitesi", onyukle="images/k/hero-1500.webp") + f"""
 <section class="hero"><div class="hero-fon" aria-hidden="true">{hero_resim()}</div><div class="ic hero-ic">
   <p class="ust-etiket">Maraş Şapçı · Kahramanmaraş'ın 11 ilçesi</p>
   <h1>Kahramanmaraş Şap Ustası</h1>
@@ -400,7 +415,7 @@ def turler():
         for n, (a, tanim, md, yorum) in enumerate(TURLER))
     tablo = "".join(f"<tr><td>{a}</td><td>{b}</td></tr>" for a, b in TUR_TABLO)
     adimlar = "".join(f"<li><h3>{a}</h3><p>{p}</p></li>" for a, p in SUREC)
-    return bas(yol, t, d, sema, "sap-yapilmis-hali") + f"""
+    return bas(yol, t, d, sema, "maras-sap-ustasi") + f"""
 <section class="sayfa-bas"><div class="ic dar">
  {iz(adim)}
  <h1>Şap Türleri ve Kahramanmaraş'ta Şap Yaptırma Rehberi</h1>
@@ -480,7 +495,7 @@ def fiyat_sayfasi():
     etk = "".join(f"<li><h3>{a}</h3><p>{p}</p></li>" for a, p in etken)
     ornek = "".join(f"<tr><td>{m} m²</td><td>{tl(m * ISCILIK[0])}–{tl(m * ISCILIK[1])} TL</td>"
                     f"<td>{tl(m * MALZEMELI[0])}–{tl(m * MALZEMELI[1])} TL</td></tr>" for m in (50, 90, 120, 150, 250))
-    return bas(yol, t, d, sema) + f"""
+    return bas(yol, t, d, sema, "maras-sapci-sitesi") + f"""
 <section class="sayfa-bas"><div class="ic dar">
  {iz(adim)}
  <h1>Maraş Şap Fiyatları ({FIYAT_TARIH})</h1>
@@ -555,7 +570,7 @@ def rehber():
      "Elektrik ve su sahada hazır olmalı.",
     ]
     lst = "".join(f'<li><span class="kutu" aria-hidden="true"></span>{x}</li>' for x in liste)
-    return bas(yol, t, d, sema, "maras-sap1") + f"""
+    return bas(yol, t, d, sema, "maras-sap-ustasi") + f"""
 <section class="sayfa-bas"><div class="ic dar">
  {iz(adim)}
  <h1>Şap Atmadan Önce Bilinmesi Gerekenler</h1>
@@ -630,11 +645,11 @@ def ilce_sayfasi(i):
     mh = "".join(f"<li>{e(m)}</li>" for m in mah)
     n = ILCELER.index(i)
     komsu = "".join(f'<li><a href="{ic(k + "/")}">{e(capa(SLUG[k], n + j))}</a></li>' for j, k in enumerate(i["komsu"]))
-    sira = [g[0] for g in GORSEL]
+    sira = [g[0] for g in GORSEL if g[0] not in BANNER]
     foto = [sira[(n * 3 + j) % len(sira)] for j in range(4)]
     iz_html = iz(adim).replace('<span aria-hidden="true">›</span>',
         f'<span aria-hidden="true">›</span> <a href="{ic("")}#ilceler">İlçeler</a> <span aria-hidden="true">›</span>', 1)
-    return bas(yol, t, d, sema, foto[0]) + f"""
+    return bas(yol, t, d, sema, BANNER[n % 2]) + f"""
 <section class="sayfa-bas"><div class="ic dar">
  {iz_html}
  <h1>{ad} Şapçı ve Şap Ustası</h1>
@@ -727,6 +742,32 @@ def denetle(sayfalar):
             if not ok: h.append(f"kırık iç link {href} ({yol})")
     return h
 
+INDEXNOW = "5f3c8e2a9b7d4c61a0e4f2b8d93c7a15"
+
+def sayfa_bas_gorsel(s, yol):
+    """İç sayfa başlık alanına markalı afiş (ilçe sayfalarında iki afiş sırayla)."""
+    a = '<section class="sayfa-bas"><div class="ic dar">'
+    if a not in s: return s
+    n = next((k for k, i in enumerate(ILCELER) if i["slug"] + "/" == yol), {"maras-sap-fiyatlari/": 0, "sap-turleri/": 1, "sap-atmadan-once/": 1}.get(yol, 0))
+    i0 = s.index(a); i1 = s.index("</div></section>", i0)
+    fig = (f'</div><figure class="sb-gorsel">{resim(BANNER[n % 2], "sb-img", "eager", "(max-width: 900px) 100vw, 46vw")}</figure>')
+    return s[:i0] + '<section class="sayfa-bas"><div class="ic sb-izgara"><div class="sb-metin">' + s[i0 + len(a):i1] + fig + s[i1:]
+
+def sema_ekle(s, yol):
+    """WebPage + birincil görsel (ImageObject) şemasını @graph'a ekler."""
+    m = re.search(r'<script type="application/ld\+json">(.*?)</script>', s)
+    g = json.loads(m.group(1)); og = re.search(r'property="og:image" content="([^"]+)"', s).group(1)
+    ad = re.sub(r"-1200$", "", og.rsplit("/", 1)[1][:-5])
+    g["@graph"].append({"@type": "WebPage", "@id": SITE + yol + "#sayfa", "url": SITE + yol, "inLanguage": "tr",
+        "name": html.unescape(re.search(r"<title>(.*?)</title>", s).group(1)),
+        "description": html.unescape(re.search(r'name="description" content="(.*?)"', s).group(1)),
+        "isPartOf": {"@id": SITE + "#site"}, "about": {"@id": SITE + "#isletme"}, "datePublished": BUGUN, "dateModified": BUGUN,
+        "primaryImageOfPage": {"@type": "ImageObject", "url": og, "caption": dict(GORSEL).get(ad, AD),
+                               "width": 1200 if ad in BANNER else OLCU.get(ad, (1500, 630))[0], "height": 661 if ad in BANNER else OLCU.get(ad, (1500, 630))[1]}})
+    if not any(x.get("@type") == "WebSite" for x in g["@graph"]):
+        g["@graph"].append({"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": AD, "inLanguage": "tr"})
+    return s[:m.start(1)] + json.dumps(g, ensure_ascii=False) + s[m.end(1):]
+
 def main():
     global ONEK
     gorselleri_hazirla(); favicon()
@@ -734,7 +775,8 @@ def main():
     def yaz(yol, fn, *a):
         global ONEK
         ONEK = "../" * yol.count("/") if yol else ""
-        S[(yol + "index.html") if yol else "index.html"] = fn(*a)
+        s = sayfa_bas_gorsel(fn(*a), yol)
+        S[(yol + "index.html") if yol else "index.html"] = sema_ekle(s, yol)
     yaz("", anasayfa); yaz("maras-sap-fiyatlari/", fiyat_sayfasi); yaz("sap-atmadan-once/", rehber); yaz("sap-turleri/", turler)
     for i in ILCELER: yaz(i["slug"] + "/", ilce_sayfasi, i)
     S["404.html"] = sayfa_404()
@@ -746,9 +788,17 @@ def main():
     os.makedirs(os.path.join(KOK, "assets"), exist_ok=True)
     for f in ("site.css", "site.js"): shutil.copy(os.path.join(KOK, "_src", f), os.path.join(KOK, "assets", f))
     url = [y.replace("index.html", "") for y in S if y != "404.html"]
+    def gorsel_xml(y):
+        adlar = list(dict.fromkeys(re.findall(r'images/(?:k/)?([a-z0-9-]+?)(?:-640|-1200|-1500|-900)?\.webp', S[y])))
+        adlar = list(dict.fromkeys("maras-sapci-hero" if a.startswith("hero") else a for a in adlar))
+        return "".join(f"<image:image><image:loc>{SITE}images/{a}.webp</image:loc></image:image>"
+                       for a in adlar if a in OLCU or a == "maras-sapci-hero")
     open(os.path.join(KOK, "sitemap.xml"), "w").write(
-        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-        "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{BUGUN}</lastmod></url>\n" for u in url) + "</urlset>\n")
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
+        "".join(f"<url><loc>{SITE}{y.replace('index.html', '')}</loc><lastmod>{BUGUN}</lastmod>{gorsel_xml(y)}</url>\n"
+                for y in S if y != "404.html") + "</urlset>\n")
+    open(os.path.join(KOK, INDEXNOW + ".txt"), "w").write(INDEXNOW)
     open(os.path.join(KOK, "robots.txt"), "w").write(f"User-agent: *\nDisallow: /_src/\n\nSitemap: {SITE}sitemap.xml\n")
     print(f"tamam: {len(S)} sayfa, sitemap {len(url)} URL")
 

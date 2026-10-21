@@ -173,7 +173,7 @@ def bas(yol, title, desc, sema, ogimg="maras-sapci", onyukle=""):
 
 def cta_bant(baslik="Metrekareyi söyleyin, fiyatı hemen verelim"):
     return f"""<section class="cta"><div class="ic">
- <div><h2>{baslik}</h2><p>Arayın ya da WhatsApp'tan yazın: ilçe, metrekare ve şapın atılacağı kat yeterli.</p></div>
+ <div><h2>{baslik}</h2><p>{(f'<a href="{ic("")}">Kahramanmaraş şap ustası</a> hattı: ') if ONEK else ""}Arayın ya da WhatsApp'tan yazın; ilçe, metrekare ve şapın atılacağı kat yeterli.</p></div>
  <div class="dugmeler"><a class="btn btn-ana" href="tel:{TEL}">Ara: {TEL_G}</a>
  <a class="btn btn-wa" href="https://wa.me/{WA}?text={e('Merhaba, şap için fiyat almak istiyorum.')}" rel="noopener" target="_blank">WhatsApp'tan yaz</a></div>
 </div></section>"""
@@ -253,6 +253,17 @@ GENEL_SSS = [
 ]
 
 # ------------------------------------------------------------------ sayfalar
+ANA_CAPA = ["Maraş şapçı", "Maraş şap ustası", "Maraş şap", "Kahramanmaraş şap ustası", "Kahramanmaraş şapçı",
+            "Kahramanmaraş şap"]
+
+def ana_link(n):
+    """İç sayfadan anasayfaya bağlam içi bağlantı — çapa metni sayfadan sayfaya değişir."""
+    a = ANA_CAPA[n % len(ANA_CAPA)]
+    l = f'<a href="{ic("")}">{a}</a>'
+    if a.endswith(" şap"):
+        return f" {l} işlerimizin tamamını aynı ekip ve aynı makineyle yapıyoruz; ilçeye göre usta değişmiyor."
+    return f" Biz {l} olarak Kahramanmaraş'ın 11 ilçesinde aynı ekip ve makineyle çalışıyoruz."
+
 def capa(i, n=0):
     """İlçe bağlantısı için dönen çapa metni — aynı kalıp her yerde tekrar etmesin (örümcek ağı)."""
     k = [f"{i['ad']} şapçı", f"{i['ad']} şap ustası", f"{i['de']} şap yapan yer", f"{i['de']} şap yaptırma"]
@@ -407,7 +418,7 @@ def turler():
      ("Şap seçerken neye bakılmalı?", "Kalınlık, zemin taşıma kapasitesi, nem, kuruma süresi, yerden ısıtma ve üstüne "
       "gelecek kaplama birlikte değerlendirilmelidir."),
     ]
-    adim = [("Anasayfa", ""), ("Şap Türleri", yol)]
+    adim = [("Maraş Şapçı", ""), ("Şap Türleri", yol)]
     sema = [isletme(), breadcrumb(adim), sss_sema(sss),
             {"@type": "Article", "headline": t, "datePublished": BUGUN, "dateModified": BUGUN, "inLanguage": "tr",
              "author": {"@id": SITE + "#isletme"}, "publisher": {"@id": SITE + "#isletme"},
@@ -424,7 +435,7 @@ def turler():
  <h1>Şap Türleri ve Kahramanmaraş'ta Şap Yaptırma Rehberi</h1>
  <p class="giris">Şap deyip geçmeyin :) Hepsi aynı gri zemin gibi görünür ama altında ne kullanıldığı, üstüne gelecek
  seramiğin, parkenin, hatta kaloriferinizin ömrünü belirler. Bu sayfada şap türlerini, hangisinin nerede kullanıldığını
- ve Kahramanmaraş'ta şap yaptırırken süreç nasıl işliyor, hepsini sade bir dille anlattık.</p>
+ ve Kahramanmaraş'ta şap yaptırırken süreç nasıl işliyor, hepsini sade bir dille anlattık.{ana_link(2)}</p>
  <p class="tarih">Yayın: <time datetime="{BUGUN}">21 Ekim 2026</time> · Hazırlayan: Maraş Şapçı</p>
  <nav class="icindekiler" aria-label="İçindekiler"><p>Bu sayfada</p><ol>
   <li><a href="#turler">8 şap türü</a></li><li><a href="#tablo">Hangi şap nerede kullanılır?</a></li>
@@ -485,7 +496,7 @@ def fiyat_sayfasi():
      ("Kalın şap daha mı pahalı?",
       "Malzemeli işte evet; kalınlık arttıkça kum ve çimento miktarı artar. İşçilik fiyatında normal kalınlıkta fark olmaz."),
     ]
-    adim = [("Anasayfa", ""), ("Maraş Şap Fiyatları", yol)]
+    adim = [("Maraş Şapçı", ""), ("Maraş Şap Fiyatları", yol)]
     sema = [isletme(), breadcrumb(adim), sss_sema(sss)]
     etken = [
      ("Metrekare", "Toplam alan büyüdükçe makinenin kurulum süresi metrekareye bölünür. Çok küçük işlerde fiyat iş bazında konuşulur."),
@@ -533,7 +544,7 @@ def fiyat_sayfasi():
  <p>Kum ve çimentoyu kendiniz alabiliyorsanız yalnız işçilik daha düşük tutar. Bu durumda ne kadar malzeme gerektiğini
  metrekareye göre biz söylüyoruz; malzemenin iş günü sahada olması yeterli.</p>
  <p>Malzeme, nakliye ve faturayla uğraşmak istemiyorsanız malzemeli fiyat daha rahat. Fatura gereken müteahhit ve
- şirket işlerinde de malzemeli ve faturalı çalışıyoruz.</p>
+ şirket işlerinde de malzemeli ve faturalı çalışıyoruz.{ana_link(0)}</p>
  <h2>Sık sorulan sorular</h2>
  {sss_html(sss)}
  <h3 class="ag-bas">İlçelere göre şap fiyatları</h3>
@@ -558,7 +569,7 @@ def rehber():
       "Seramik için şapın yeterince sertleşmesi beklenir. Parke ve laminat gibi neme hassas kaplamalarda bekleme daha uzundur "
       "ve nem ölçümü yapılmalıdır."),
     ]
-    adim = [("Anasayfa", ""), ("Şap Atmadan Önce", yol)]
+    adim = [("Maraş Şapçı", ""), ("Şap Atmadan Önce", yol)]
     sema = [isletme(), breadcrumb(adim), sss_sema(sss),
             {"@type": "Article", "headline": t, "datePublished": BUGUN, "dateModified": BUGUN, "inLanguage": "tr",
              "author": {"@id": SITE + "#isletme"}, "publisher": {"@id": SITE + "#isletme"},
@@ -578,7 +589,7 @@ def rehber():
  {iz(adim)}
  <h1>Şap Atmadan Önce Bilinmesi Gerekenler</h1>
  <p class="giris">Şapın düzgün çıkması iş gününden önce başlar. Bu sayfada sahada en sık karşılaştığımız eksikleri,
- kalınlığı, kuruma süresini ve Kahramanmaraş'ın iklimine göre dikkat edilmesi gerekenleri topladık.</p>
+ kalınlığı, kuruma süresini ve Kahramanmaraş'ın iklimine göre dikkat edilmesi gerekenleri topladık.{ana_link(4)}</p>
  <p class="tarih">Yayın: <time datetime="{BUGUN}">21 Ekim 2026</time></p>
 </div></section>
 
@@ -638,7 +649,7 @@ def ilce_sayfasi(i):
      (f"{de} şap fiyatı ne kadar?",
       f"{FIYAT_TARIH} itibarıyla işçilik {ISCILIK[0]}–{ISCILIK[1]} TL/m², malzemeli ve faturalı {MALZEMELI[0]}–{MALZEMELI[1]} TL/m²."),
     ]
-    adim = [("Anasayfa", ""), (f"{ad} Şapçı", yol)]
+    adim = [("Maraş Şapçı", ""), (f"{ad} Şapçı", yol)]
     sema = [isletme(), breadcrumb(adim), sss_sema(sss),
             {"@type": "Service", "name": f"{ad} şapçı ve şap ustası", "serviceType": "Şap",
              "provider": {"@id": SITE + "#isletme"}, "areaServed": {"@type": "AdministrativeArea", "name": f"{ad}, Kahramanmaraş"},
@@ -671,7 +682,7 @@ def ilce_sayfasi(i):
 <section class="blok acik"><div class="ic dar">
  <h2>{de} şap nereye yaptırılır?</h2>
  <p>{de} "şap yapan yer neresi, hangi ustaya vereyim" diye soruyorsanız cevabımız kısa: bize. {ad} şap ustası olarak
- ekip ve makineyle adresinize geliyoruz; sizin bir yere gitmeniz gerekmiyor.</p>
+ ekip ve makineyle adresinize geliyoruz; sizin bir yere gitmeniz gerekmiyor.{ana_link(n + 1)}</p>
  <ol class="kisa-adim"><li><b>Arayın:</b> {TEL_G}</li><li><b>Mahalle, metrekare ve katı söyleyin.</b></li>
  <li><b>Gün ve fiyatı netleştirelim.</b></li><li><b>Şapı atalım, kürünü anlatalım.</b></li></ol>
  <h2>{ad} şap ustası olarak dikkat ettiklerimiz</h2>

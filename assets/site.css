@@ -254,3 +254,4 @@ th{background:var(--koyu);color:#fff;font-weight:600}
 .afis-img{width:100%;aspect-ratio:1690/931;object-fit:cover;transition:transform .5s}
 .afis-link:hover .afis-img{transform:scale(1.025)}
 .afis-cta{position:absolute;right:14px;bottom:14px;padding:8px 14px;border-radius:999px;background:var(--vurgu);color:var(--koyu);font-weight:700;font-size:.92rem;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.cta p a{color:var(--koyu);font-weight:700;text-decoration:underline;text-underline-offset:3px}

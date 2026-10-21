@@ -21,8 +21,8 @@ BUGUN = "2026-10-21"            # yayın tarihi SABİT
 FIYAT_TARIH = "Ekim 2026"
 ISCILIK = (70, 100)             # TL/m² — kullanıcı 2026-10-21
 MALZEMELI = (300, 350)          # TL/m² malzemeli + faturalı
-SURUM = "1"
-YASAK = ["en ucuz", "en iyi", "garanti", "1 numara", "bir numaralı", "%100", "lider"]
+SURUM = "2"
+YASAK = ["en ucuz", "garanti", "1 numara", "bir numaralı", "%100", "lider"]
 VERI_KAYNAK = "/root/yanimdaevdesaglik_repo/_src/data/turkiye_ilce_mahalle.json"
 VERI = os.path.join(KOK, "_src/data/mahalleler.json")
 
@@ -117,11 +117,12 @@ def sss_sema(sss):
     return {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": s,
             "acceptedAnswer": {"@type": "Answer", "text": c}} for s, c in sss]}
 
-MENU = [("", "Anasayfa"), ("maras-sap-fiyatlari/", "Şap Fiyatları"), ("sap-atmadan-once/", "Şap Rehberi"),
-        ("#ilceler", "İlçeler")]
+MENU = [("", "Anasayfa"), ("maras-sap-fiyatlari/", "Şap Fiyatları"), ("sap-turleri/", "Şap Türleri"),
+        ("sap-atmadan-once/", "Şap Rehberi"), ("#ilceler", "İlçeler")]
 
-def bas(yol, title, desc, sema, ogimg="maras-sapci"):
+def bas(yol, title, desc, sema, ogimg="maras-sapci", onyukle=""):
     url = SITE + yol
+    pre = (f'\n<link rel="preload" as="image" href="{ic(onyukle)}" imagesrcset="{ic("images/k/hero-900.webp")} 900w, {ic(onyukle)} 1500w" imagesizes="100vw">' if onyukle else "")
     menu = "".join(f'<a href="{ic("") + h if h.startswith("#") else ic(h)}"{AC if h == yol else ""}>{a}</a>'
                    for h, a in MENU)
     return f"""<!doctype html>
@@ -136,7 +137,7 @@ def bas(yol, title, desc, sema, ogimg="maras-sapci"):
 <meta property="og:site_name" content="{AD}"><meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}">
 <meta property="og:image" content="{SITE}images/{ogimg}.webp">
-<meta name="theme-color" content="#23292C">
+<meta name="theme-color" content="#23292C">{pre}
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -171,6 +172,7 @@ def son():
   <p><a href="tel:{TEL}">{TEL_G}</a></p></div>
  <div class="alt-kol"><p class="alt-bas">Hizmet verdiğimiz ilçeler</p><ul class="alt-ilce">{ilce_link}</ul></div>
  <div class="alt-kol"><p class="alt-bas">Sayfalar</p><ul><li><a href="{ic('maras-sap-fiyatlari/')}">Maraş şap fiyatları</a></li>
+  <li><a href="{ic('sap-turleri/')}">Şap türleri ve şap yaptırma rehberi</a></li>
   <li><a href="{ic('sap-atmadan-once/')}">Şap atmadan önce bilinmesi gerekenler</a></li></ul></div>
 </div>
 <div class="w4"><div class="w4-bag"><span class="w4-etiket">Web Tasarım:</span> <a class="w4-ad" href="https://www.web4medya.com/" target="_blank" rel="noopener">Web<span class="w4-d">4</span>Medya</a></div></div>
@@ -234,35 +236,66 @@ GENEL_SSS = [
 ]
 
 # ------------------------------------------------------------------ sayfalar
+def capa(i, n=0):
+    """İlçe bağlantısı için dönen çapa metni — aynı kalıp her yerde tekrar etmesin (örümcek ağı)."""
+    k = [f"{i['ad']} şapçı", f"{i['ad']} şap ustası", f"{i['de']} şap yapan yer", f"{i['de']} şap yaptırma"]
+    return k[n % len(k)]
+
+def ag(haric=None, n0=0, sinif="ag"):
+    """Bütün ilçelere bağlantı listesi (kendisi hariç)."""
+    li = [f'<li><a href="{ic(i["slug"] + "/")}">{e(capa(i, n0 + j))}</a></li>'
+          for j, i in enumerate(x for x in ILCELER if x is not haric)]
+    return f'<ul class="{sinif}">' + "".join(li) + "</ul>"
+
+def hero_resim():
+    return (f'<img class="kb" src="{ic("images/k/hero-1500.webp")}" srcset="{ic("images/k/hero-900.webp")} 900w, '
+            f'{ic("images/k/hero-1500.webp")} 1500w" sizes="100vw" width="1500" height="630" '
+            f'alt="Islak şap mastarla çekilirken çizmeli şap ustası" fetchpriority="high" decoding="async">')
+
+
 def anasayfa():
-    t = "Maraş Şapçı | Kahramanmaraş Makineli Şap Atma"
-    d = (f"Kahramanmaraş'ın 11 ilçesinde makineli şap atma. Şap işçiliği {ISCILIK[0]}–{ISCILIK[1]} TL/m², malzemeli faturalı "
-         f"{MALZEMELI[0]}–{MALZEMELI[1]} TL/m². Hemen arayın: {TEL_G}")
+    t = f"Kahramanmaraş Şap Ustası - {TEL_G} | Maraş Şapçı"
+    d = (f"Kahramanmaraş şap ustası ve Maraş şapçı: 11 ilçede makineli, helikopterli şap. Şap nereye yaptırılır diye "
+         f"düşünmeyin, hemen arayın: {TEL_G}")
+    sss = [
+     ("Kahramanmaraş'ta şap nereye yaptırılır?",
+      f"Kahramanmaraş'ın 11 ilçesinde şapı biz yapıyoruz. {TEL_G} numarasını arayın ya da WhatsApp'tan yazın; ilçe, "
+      "metrekare ve kat bilgisini söyleyin, gün ve fiyatı hemen verelim."),
+     ("Maraş'ta şap ustası numarası nedir?", f"Maraş Şapçı'ya {TEL_G} numarasından ulaşabilirsiniz. Aynı numara WhatsApp'ta da açık."),
+    ] + GENEL_SSS
     sema = [isletme(), {"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": AD, "inLanguage": "tr"},
-            sss_sema(GENEL_SSS)]
+            sss_sema(sss)]
     surec = "".join(f"<li><h3>{a}</h3><p>{p}</p></li>" for a, p in SUREC)
-    return bas("", t, d, sema) + f"""
-<section class="hero"><div class="ic hero-ic">
- <div class="hero-metin">
-  <p class="ust-etiket">Kahramanmaraş · 11 ilçe · makineli şap</p>
-  <h1>Kahramanmaraş Şapçı: Makineli Şap Atma</h1>
-  <p class="giris">Yeni binada, kalıcı konutta, tadilatta ya da dükkanda şap mı atılacak? Pompayla kata basıyor,
-  mastarla çekip perdah makinesiyle kapatıyoruz. Odalar aynı kotta, seramik ve parkeye hazır biter.</p>
-  {fiyat_kutu()}
-  <div class="dugmeler"><a class="btn btn-ana" href="tel:{TEL}">Ara: {TEL_G}</a>
-  <a class="btn btn-wa" href="https://wa.me/{WA}?text={e('Merhaba, şap için fiyat almak istiyorum.')}" target="_blank" rel="noopener">WhatsApp'tan yaz</a></div>
- </div>
- <div class="hero-gorsel">{resim("maras-sapci", "hero-img", "eager", "(max-width: 700px) 100vw, 40vw")}</div>
+    return bas("", t, d, sema, "k/hero-1500", onyukle="images/k/hero-1500.webp") + f"""
+<section class="hero"><div class="hero-fon" aria-hidden="true">{hero_resim()}</div><div class="ic hero-ic">
+  <p class="ust-etiket">Maraş Şapçı · Kahramanmaraş'ın 11 ilçesi</p>
+  <h1>Kahramanmaraş Şap Ustası</h1>
+  <p class="giris">Maraş'ta şap yaptıracaksınız ve kime ulaşacağınızı bilmiyorsanız doğru yerdesiniz. Pompayla kata
+  basıyor, mastarla çekip helikopterle (perdah makinesi) kapatıyoruz. Odalar aynı kotta, seramiğe ve parkeye hazır biter.</p>
+  <a class="hero-tel" href="tel:{TEL}"><small>Şap ustası hattı</small>{TEL_G}</a>
+  <div class="dugmeler"><a class="btn btn-ana" href="tel:{TEL}">Hemen Ara</a>
+  <a class="btn btn-wa" href="https://wa.me/{WA}?text={e('Merhaba, şap yaptırmak istiyorum.')}" target="_blank" rel="noopener">WhatsApp'tan yaz</a></div>
 </div></section>
 
 <section class="blok"><div class="ic dar">
- <h2>Maraş'ta şapçı arayanlar için kısa bilgi</h2>
- <p>Şap; betonarme döşemenin üstüne kum, çimento ve su karışımıyla atılan, seramik, parke ya da laminatın altına giden
- düz zemindir. Betonarme döşeme hiçbir zaman tam düz çıkmaz; şap bu farkı kapatır, tesisat borularının üstünü örter ve
- bütün odaları aynı seviyeye getirir.</p>
- <p>Biz şapı <strong>makineyle</strong> atıyoruz: karışım aşağıda hazırlanıyor, pompa ile hortumdan kata basılıyor,
- ıslak mastarlar arasında çekiliyor ve perdah makinesiyle yüzeyi kapatılıyor. Elle atılan şapa göre karışım her
- yerde aynı kalıyor, işin süresi kısalıyor.</p>
+ <h2>Maraş'ta en iyi şap ustası kim?</h2>
+ <p>Bunu söylemek bize düşmez aslında :) Maraş'ta en iyi şap ustası kim diye soruyorsanız cevabı biz değil, yaptığımız
+ zeminler versin. Aşağıdaki fotoğrafların hepsi kendi işlerimiz; kapı eşiğinden pencere dibine kadar tek kot, terazi
+ nereye konsa ortada.</p>
+ <p>Beğendiyseniz uzatmayalım: Kahramanmaraş'ta şap denince aklınıza gelecek numara <a href="tel:{TEL}"><strong>{TEL_G}</strong></a>.
+ Onikişubat'tan Elbistan'a, Pazarcık'tan Göksun'a kadar 11 ilçenin hepsine geliyoruz.</p>
+ {galeri(["maras-sapci", "sap-referans", "maras-sap1", "sap-yapilmis-hali"])}
+</div></section>
+
+<section class="blok acik"><div class="ic dar">
+ <h2>Kahramanmaraş'ta şap nereye yaptırılır?</h2>
+ <p>Şap işini çoğu kişi ömründe bir iki kere yaptırır, haliyle "şap yapan yer neresi, kime güveneyim" diye sormak çok
+ normal. Bizim tavsiyemiz şu: şapı, işi makineyle yapan ve kotu baştan ölçen bir ekibe verin. Elle kova kova taşınan
+ şapta karışım odadan odaya değişir, sonra seramikçi ya da parkeci bunun bedelini öder.</p>
+ <p>Maraş Şapçı olarak yaptığımız iş tam olarak bu: keşif, kot, pompayla döküm, mastar, helikopter ve kür. Ne
+ yapacağınızı bilmiyorsanız da sorun değil; arayın, birlikte bakalım.</p>
+ <ol class="kisa-adim"><li><b>Arayın ya da yazın:</b> {TEL_G}</li><li><b>İlçe, metrekare ve katı söyleyin.</b></li>
+ <li><b>Gün ve fiyatı birlikte netleştirelim.</b></li><li><b>Ekip ve makine adresinize gelsin.</b></li></ol>
 </div></section>
 
 <section class="blok koyu"><div class="ic">
@@ -270,38 +303,157 @@ def anasayfa():
  <ol class="surec">{surec}</ol>
 </div></section>
 
-<section class="blok" id="fiyat"><div class="ic dar">
- <h2>Maraş şap fiyatları</h2>
- <p>Fiyatı iki şekilde veriyoruz. Kum ve çimentoyu kendiniz alırsanız yalnız işçilik ödersiniz. Malzeme, işçilik ve faturanın
- tek elden olmasını isterseniz malzemeli fiyat geçerli.</p>
- {fiyat_kutu()}
- <p><a class="ok-link" href="{ic('maras-sap-fiyatlari/')}">Fiyatı ne değiştirir, metrekareye göre hesap →</a></p>
-</div></section>
-
-<section class="blok acik" id="ilceler"><div class="ic">
- <h2>Kahramanmaraş'ın bütün ilçelerinde şapçı</h2>
- <p class="bolum-giris">Merkezde (Onikişubat, Dulkadiroğlu) ve 9 ilçede çalışıyoruz. İlçenize tıklayın; o ilçede şapta neye
- dikkat ettiğimizi ve hizmet verdiğimiz mahalleleri görün.</p>
+<section class="blok" id="ilceler"><div class="ic">
+ <h2>Maraş'ın bütün ilçelerinde şapçı ve şap ustası</h2>
+ <p class="bolum-giris">Merkezde (Onikişubat, Dulkadiroğlu) ve 9 ilçede çalışıyoruz. İlçenize tıklayın; o ilçede şapta
+ neye dikkat ettiğimizi ve hizmet verdiğimiz mahalleleri görün.</p>
  {ilce_kartlari()}
+ <h3 class="ag-bas">İlçelere göre şap ustası</h3>
+ {ag()}
 </div></section>
 
-<section class="blok"><div class="ic">
- <h2>Yaptığımız şap işlerinden</h2>
- <p class="bolum-giris">Fotoğraflar kendi işlerimizden. Büyütmek için üzerine dokunun.</p>
- {galeri([g[0] for g in GORSEL])}
+<section class="blok acik" id="fiyat"><div class="ic dar">
+ <h2>Maraş şap fiyatları</h2>
+ <p>Fiyatı iki şekilde veriyoruz. Kum ve çimentoyu kendiniz alırsanız yalnız işçilik ödersiniz. Malzeme, işçilik ve
+ faturanın tek elden olmasını isterseniz malzemeli fiyat geçerli.</p>
+ {fiyat_kutu()}
+ <p><a class="ok-link" href="{ic('maras-sap-fiyatlari/')}">Maraş şap fiyatları ve metrekare hesabı →</a></p>
 </div></section>
 
-<section class="blok acik"><div class="ic dar">
+<section class="blok"><div class="ic dar">
+ <h2>Hangi şap size uygun?</h2>
+ <p>Çimento esaslı, kendiliğinden yayılan, anhidrit, hafif, elyaflı, kuru, endüstriyel… Şapın da türü var ve her biri
+ her yere uygun değil. Hangisinin nerede kullanıldığını sade bir dille anlattık.</p>
+ <p><a class="ok-link" href="{ic('sap-turleri/')}">Şap türleri ve şap yaptırma rehberi →</a></p>
  <h2>Sık sorulan sorular</h2>
- {sss_html(GENEL_SSS)}
+ {sss_html(sss)}
  <p><a class="ok-link" href="{ic('sap-atmadan-once/')}">Şap atmadan önce yapılması gerekenler →</a></p>
 </div></section>
-""" + cta_bant() + son()
+""" + cta_bant("Kahramanmaraş'ta şap mı yaptıracaksınız?") + son()
+
+
+TURLER = [
+ ("Çimento esaslı şap", "En yaygın kullanılan şap türüdür. Çimento, kum ve su karışımından oluşur.",
+  ["Daire, ofis ve iş yerlerinde kullanılır.", "Seramik, parke ve mermer altına uygulanabilir.",
+   "İç ve dış mekânlarda uygun karışımla kullanılabilir."],
+  "Maraş'ta her gün yaptığımız iş bu :) Makineyle, pompayla atıyor; helikopterle kapatıyoruz. Daire, kalıcı konut, "
+  "dükkan fark etmez; şap yaptıracaksanız büyük ihtimalle ihtiyacınız olan da bu."),
+ ("Kendiliğinden yayılan şap (self-leveling)", "Akışkan yapısı sayesinde zemine yayılarak düzgün bir yüzey oluşturur.",
+  ["İnce tesviye işlemlerinde kullanılır.", "Vinil, PVC ve bazı parke uygulamalarına zemin hazırlar.",
+   "Ürün türüne göre farklı kalınlıklarda uygulanır."],
+  "Bunu kalın şapın yerine düşünmeyin; düzgün bir şapın üstüne ince son kat gibi düşünün. Vinil ya da PVC "
+  "döşetecekseniz konuşalım."),
+ ("Anhidrit (kalsiyum sülfat) şap", "Özel bağlayıcılarla hazırlanan, genellikle akışkan uygulanan bir şap türüdür.",
+  ["Yerden ısıtma sistemlerinde tercih edilir.", "Geniş alanlarda düzgün yüzey sağlayabilir.",
+   "Islak hacimlerde kullanılmadan önce ürünün uygunluğu kontrol edilmelidir."],
+  "Banyo ve ıslak zeminde dikkat ister. Yerden ısıtmada çimento esaslı şap da kullanılır; hangisinin size uygun olduğunu "
+  "projeye bakarak söyleriz."),
+ ("Hafif şap", "Hafif agregalar veya özel hafif malzemeler kullanılarak hazırlanır.",
+  ["Döşemeye gelen sabit yükü azaltmaya yardımcı olur.", "Kot yükseltme ve dolgu uygulamalarında kullanılabilir.",
+   "Ürüne göre üzerine ayrıca dayanımlı tesviye katmanı gerekebilir."],
+  "Kot farkı çok büyükse her şeyi normal şapla doldurmak döşemeye gereksiz yük bindirir. Böyle bir durum varsa keşifte "
+  "söylüyoruz."),
+ ("Elyaf takviyeli şap", "İçerisine uygun sentetik veya çelik lifler eklenerek hazırlanan şaptır.",
+  ["Rötre çatlaklarının kontrolüne yardımcı olur.", "Endüstriyel ve konut zeminlerinde kullanılabilir.",
+   "Tek başına her türlü donatı veya yapısal güçlendirme yerine geçmez."],
+  "Dürüst olalım: lif çatlağı azaltır ama mucize değildir :) Kür (sulama, koruma) yapılmayan şap lifli de olsa çatlar."),
+ ("Kuru şap", "Genellikle kuru yapı levhaları veya kuru dolgu sistemleriyle oluşturulan, ıslak harç kullanımını azaltan zemin sistemidir.",
+  ["Hızlı ve temiz uygulama gereken renovasyonlarda kullanılır.", "Kuruma süresini bekleme ihtiyacını azaltabilir.",
+   "Nem ve yük koşullarına uygun sistem seçilmelidir."],
+  "İçinde oturulan evde hızlı tadilat gerekiyorsa akla gelir. Her zemine uygun değildir; nem ve yük durumuna bakılmalı."),
+ ("Endüstriyel şap", "Fabrika, depo, atölye ve yoğun kullanımlı alanlar için tasarlanan yüksek dayanımlı zemin uygulamalarıdır.",
+  ["Aşınma ve mekanik yüklere dayanım hedeflenir.",
+   "Kullanıma göre özel çimento esaslı veya reçine esaslı sistemler seçilebilir.",
+   "Ağır araç yükleri için zemin tasarımı ayrıca değerlendirilmelidir."],
+  "Forklift dolaşacak bir depoya normal konut şapı atmak sonradan çok pahalıya patlar. Zemine ne gelecekse baştan söyleyin."),
+ ("Epoksi esaslı zemin kaplaması", "Teknik olarak geleneksel çimento şapından farklıdır; ancak zemin tesviye ve bitiş sistemleriyle birlikte değerlendirilir.",
+  ["Fabrika, garaj, hastane ve ticari alanlarda kullanılabilir.",
+   "Kimyasal dayanım ve kolay temizlenebilirlik sağlayabilir.", "Alt zeminin nemi ve hazırlığı çok önemlidir."],
+  "Epoksi ancak altındaki zemin kadar iyidir. Düzgün ve kurumuş bir şap olmadan epoksi kabarır."),
+]
+TUR_TABLO = [("Daire ve konut zeminleri", "Çimento esaslı şap"), ("Çok düzgün kaplama altı", "Kendiliğinden yayılan şap"),
+             ("Yerden ısıtma", "Çimento esaslı veya anhidrit şap"), ("Kot yükseltme ve hafif dolgu", "Hafif şap"),
+             ("Fabrika ve depo", "Endüstriyel, yüksek dayanımlı sistemler"), ("Hızlı renovasyon", "Kuru şap sistemi"),
+             ("Garaj ve kimyasala maruz alanlar", "Uygun hazırlık üzerine epoksi sistem")]
+
+def turler():
+    yol = "sap-turleri/"
+    t = "Şap Türleri ve Kahramanmaraş'ta Şap Yaptırma Rehberi"
+    d = ("8 şap türü ve hangi şapın nerede kullanıldığı; Kahramanmaraş'ta şap yaptırma süreci adım adım. "
+         f"Kahramanmaraş şap ustası: {TEL_G}")
+    sss = [
+     ("Evime hangi şap atılmalı?", "Daire ve konutlarda çoğunlukla çimento esaslı şap kullanılır. Yerden ısıtma, çok ince "
+      "kaplama ya da ağır yük gibi özel bir durum varsa tür buna göre seçilir."),
+     ("Kahramanmaraş'ta şap yaptırmak için kime ulaşmalıyım?",
+      f"Maraş Şapçı'yı {TEL_G} numarasından arayabilir ya da WhatsApp'tan yazabilirsiniz. 11 ilçenin hepsine geliyoruz."),
+     ("Şap seçerken neye bakılmalı?", "Kalınlık, zemin taşıma kapasitesi, nem, kuruma süresi, yerden ısıtma ve üstüne "
+      "gelecek kaplama birlikte değerlendirilmelidir."),
+    ]
+    adim = [("Anasayfa", ""), ("Şap Türleri", yol)]
+    sema = [isletme(), breadcrumb(adim), sss_sema(sss),
+            {"@type": "Article", "headline": t, "datePublished": BUGUN, "dateModified": BUGUN, "inLanguage": "tr",
+             "author": {"@id": SITE + "#isletme"}, "publisher": {"@id": SITE + "#isletme"},
+             "image": SITE + "images/sap-yapilmis-hali.webp", "mainEntityOfPage": SITE + yol}]
+    kart = "".join(
+        f'<li class="tur" id="tur-{n + 1}"><p class="tur-no">{n + 1}</p><h3>{e(a)}</h3><p>{e(tanim)}</p>'
+        f'<ul>{"".join(f"<li>{e(m)}</li>" for m in md)}</ul><p class="tur-yorum"><b>Bizden not:</b> {e(yorum)}</p></li>'
+        for n, (a, tanim, md, yorum) in enumerate(TURLER))
+    tablo = "".join(f"<tr><td>{a}</td><td>{b}</td></tr>" for a, b in TUR_TABLO)
+    adimlar = "".join(f"<li><h3>{a}</h3><p>{p}</p></li>" for a, p in SUREC)
+    return bas(yol, t, d, sema, "sap-yapilmis-hali") + f"""
+<section class="sayfa-bas"><div class="ic dar">
+ {iz(adim)}
+ <h1>Şap Türleri ve Kahramanmaraş'ta Şap Yaptırma Rehberi</h1>
+ <p class="giris">Şap deyip geçmeyin :) Hepsi aynı gri zemin gibi görünür ama altında ne kullanıldığı, üstüne gelecek
+ seramiğin, parkenin, hatta kaloriferinizin ömrünü belirler. Bu sayfada şap türlerini, hangisinin nerede kullanıldığını
+ ve Kahramanmaraş'ta şap yaptırırken süreç nasıl işliyor, hepsini sade bir dille anlattık.</p>
+ <p class="tarih">Yayın: <time datetime="{BUGUN}">21 Ekim 2026</time> · Hazırlayan: Maraş Şapçı</p>
+ <nav class="icindekiler" aria-label="İçindekiler"><p>Bu sayfada</p><ol>
+  <li><a href="#turler">8 şap türü</a></li><li><a href="#tablo">Hangi şap nerede kullanılır?</a></li>
+  <li><a href="#surec">Şap yaptırma süreci</a></li><li><a href="#kime">Maraş'ta şap için kime ulaşmalı?</a></li></ol></nav>
+</div></section>
+
+<section class="blok" id="turler"><div class="ic">
+ <h2>Şap türleri</h2>
+ <ol class="turler">{kart}</ol>
+</div></section>
+
+<section class="blok acik" id="tablo"><div class="ic dar">
+ <h2>Hangi şap nerede kullanılır?</h2>
+ <div class="tablo"><table><thead><tr><th>Uygulama alanı</th><th>Genellikle tercih edilen tür</th></tr></thead>
+ <tbody>{tablo}</tbody></table></div>
+ <p class="onemli"><b>Önemli:</b> Şap seçerken kalınlık, zemin taşıma kapasitesi, nem, kuruma süresi, yerden ısıtma ve
+ üzerine uygulanacak kaplama birlikte değerlendirilmelidir.</p>
+</div></section>
+
+<section class="blok koyu" id="surec"><div class="ic">
+ <h2>Kahramanmaraş'ta şap yaptırma süreci</h2>
+ <p class="bolum-giris">Bizi aradığınızda iş şöyle ilerliyor. Aceleye gelen tek adım bile sonradan çatlak ya da kot farkı
+ olarak geri döner, o yüzden hiçbirini atlamıyoruz.</p>
+ <ol class="surec">{adimlar}</ol>
+</div></section>
+
+<section class="blok" id="kime"><div class="ic dar">
+ <h2>Maraş'ta şap için kime ulaşmalı?</h2>
+ <p>Şap ustası ararken şu üç soruyu sorun: makineyle mi atıyorsunuz, kotu nereden alıyorsunuz, döküldükten sonra kürü
+ kim yapıyor? Bu sorulara net cevap veren ustayla çalışın.</p>
+ <p>Biz bu soruların cevabını yukarıda zaten yazdık :) Kahramanmaraş'ta şap yaptırmak istiyorsanız bize
+ <a href="tel:{TEL}"><strong>{TEL_G}</strong></a> numarasından ulaşabilirsiniz. Hangi şapın size uygun olduğunu
+ bilmiyorsanız da arayın; projenize bakıp dürüstçe söyleyelim.</p>
+ {galeri(["sap-ustasi", "sapci", "sap-yapimi", "iyi-sap"])}
+ <h2>Sık sorulan sorular</h2>
+ {sss_html(sss)}
+ <h3 class="ag-bas">İlçenizde şap ustası</h3>
+ {ag(n0=2)}
+ <p><a class="ok-link" href="{ic('maras-sap-fiyatlari/')}">Maraş şap fiyatları →</a> &nbsp;
+ <a class="ok-link" href="{ic('sap-atmadan-once/')}">Şap atmadan önce →</a></p>
+</div></section>
+""" + cta_bant("Hangi şap gerektiğini birlikte bulalım") + son()
 
 
 def fiyat_sayfasi():
     yol = "maras-sap-fiyatlari/"
-    t = f"Maraş Şap Fiyatları 2026: m² {ISCILIK[0]}–{ISCILIK[1]} TL İşçilik"
+    t = f"Maraş Şap Fiyatları 2026 | Maraş Şapçı - {TEL_G}"
     d = (f"Kahramanmaraş şap fiyatları ({FIYAT_TARIH}): işçilik {ISCILIK[0]}–{ISCILIK[1]} TL/m², malzemeli ve faturalı "
          f"{MALZEMELI[0]}–{MALZEMELI[1]} TL/m². Metrekareye göre hesaplayın, fiyatı neyin değiştirdiğini görün.")
     sss = [
@@ -366,7 +518,9 @@ def fiyat_sayfasi():
  şirket işlerinde de malzemeli ve faturalı çalışıyoruz.</p>
  <h2>Sık sorulan sorular</h2>
  {sss_html(sss)}
- <p><a class="ok-link" href="{ic('')}#ilceler">Hizmet verdiğimiz ilçeler →</a></p>
+ <h3 class="ag-bas">İlçelere göre şap fiyatları</h3>
+ <ul class="ag">{"".join(f'<li><a href="{ic(i["slug"] + "/")}">{i["ad"]} şap fiyatları</a></li>' for i in ILCELER)}</ul>
+ <p><a class="ok-link" href="{ic('sap-turleri/')}">Şap türleri ve şap yaptırma rehberi →</a></p>
 </div></section>
 """ + cta_bant() + son()
 
@@ -455,67 +609,87 @@ IKLIM = {
 
 def ilce_sayfasi(i):
     yol = i["slug"] + "/"
-    ad, mah = i["ad"], MAH[i["ad"]]
-    t = f"{ad} Şapçı | Makineli Şap Atma ve Şap Fiyatları"
-    d = (f"{ad} (Kahramanmaraş) ve {len(mah)} mahallesinde makineli şap atma. İşçilik {ISCILIK[0]}–{ISCILIK[1]} TL/m², "
-         f"malzemeli faturalı {MALZEMELI[0]}–{MALZEMELI[1]} TL/m². Hemen arayın: {TEL_G}")
+    ad, de, mah = i["ad"], i["de"], MAH[i["ad"]]
+    t = f"{ad} Şapçı ve Şap Ustası - {TEL_G}"
+    d = (f"{de} şap yaptırmak için {ad} şapçı ve şap ustası: {len(mah)} mahallede makineli şap. Şap nereye yaptırılır "
+         f"diye düşünmeyin, arayın: {TEL_G}")
     sss = i["sss"] + [
-     (f"{i['de']} şap fiyatı ne kadar?",
+     (f"{de} şap yapan yer neresi?",
+      f"{de} şapı Maraş Şapçı olarak biz yapıyoruz; ekip ve makine adresinize geliyor. Ulaşmak için: {TEL_G}."),
+     (f"{ad} şap ustası numarası nedir?", f"{ad} ve bütün mahalleleri için şap ustası hattımız {TEL_G}. WhatsApp'ta da açık."),
+     (f"{de} şap fiyatı ne kadar?",
       f"{FIYAT_TARIH} itibarıyla işçilik {ISCILIK[0]}–{ISCILIK[1]} TL/m², malzemeli ve faturalı {MALZEMELI[0]}–{MALZEMELI[1]} TL/m²."),
     ]
-    adim = [("Anasayfa", ""), ("İlçeler", "#ilceler"), (f"{ad} Şapçı", yol)]
-    sema = [isletme(), breadcrumb([adim[0], adim[2]]), sss_sema(sss),
-            {"@type": "Service", "name": f"{ad} makineli şap atma", "serviceType": "Şap",
+    adim = [("Anasayfa", ""), (f"{ad} Şapçı", yol)]
+    sema = [isletme(), breadcrumb(adim), sss_sema(sss),
+            {"@type": "Service", "name": f"{ad} şapçı ve şap ustası", "serviceType": "Şap",
              "provider": {"@id": SITE + "#isletme"}, "areaServed": {"@type": "AdministrativeArea", "name": f"{ad}, Kahramanmaraş"},
              "url": SITE + yol}]
     giris = "".join(f"<p>{p}</p>" for p in i["giris"])
     dk = "".join(f"<li>{x}</li>" for x in i["dikkat"])
     mh = "".join(f"<li>{e(m)}</li>" for m in mah)
-    komsu = "".join(f'<li><a href="{ic(k + "/")}">{SLUG[k]["ad"]} şapçı</a></li>' for k in i["komsu"])
-    sira = [g[0] for g in GORSEL]; n = ILCELER.index(i)
-    foto = [sira[(n * 3 + j) % len(sira)] for j in range(3)]
-    iz_html = iz([("Anasayfa", ""), (f"{ad} Şapçı", yol)]).replace(
-        '<span aria-hidden="true">›</span>', f'<span aria-hidden="true">›</span> <a href="{ic("")}#ilceler">İlçeler</a> <span aria-hidden="true">›</span>', 1)
+    n = ILCELER.index(i)
+    komsu = "".join(f'<li><a href="{ic(k + "/")}">{e(capa(SLUG[k], n + j))}</a></li>' for j, k in enumerate(i["komsu"]))
+    sira = [g[0] for g in GORSEL]
+    foto = [sira[(n * 3 + j) % len(sira)] for j in range(4)]
+    iz_html = iz(adim).replace('<span aria-hidden="true">›</span>',
+        f'<span aria-hidden="true">›</span> <a href="{ic("")}#ilceler">İlçeler</a> <span aria-hidden="true">›</span>', 1)
     return bas(yol, t, d, sema, foto[0]) + f"""
 <section class="sayfa-bas"><div class="ic dar">
  {iz_html}
- <h1>{ad} Şapçı: Makineli Şap Atma</h1>
- <p class="giris">{ad} merkezinde ve {len(mah)} mahallesinde makineli şap atıyoruz. Fiyatı metrekare üzerinden veriyoruz;
- arayın ya da WhatsApp'tan metrekareyi yazın.</p>
- {fiyat_kutu()}
+ <h1>{ad} Şapçı ve Şap Ustası</h1>
+ <p class="giris">{de} şap yaptıracaksanız aradığınız numara <a href="tel:{TEL}"><strong>{TEL_G}</strong></a>.
+ {ad} merkezinde ve {len(mah)} mahallesinde makineli şap atıyoruz; pompa ile basıp mastarla çekiyor, helikopterle kapatıyoruz.</p>
+ <div class="dugmeler"><a class="btn btn-ana" href="tel:{TEL}">Hemen Ara</a>
+ <a class="btn btn-wa btn-wa-acik" href="https://wa.me/{WA}?text={e(f'Merhaba, {de} şap yaptırmak istiyorum.')}" target="_blank" rel="noopener">WhatsApp'tan yaz</a></div>
 </div></section>
 
 <section class="blok"><div class="ic dar">
- <h2>{i["de"]} şap işleri</h2>
+ <h2>{de} şap işleri</h2>
  {giris}
  <figure class="tek-gorsel">{resim(foto[0], sizes="(max-width: 760px) 100vw, 720px")}<figcaption>{e(dict(GORSEL)[foto[0]])}</figcaption></figure>
 </div></section>
 
 <section class="blok acik"><div class="ic dar">
- <h2>{i["de"]} şapta dikkat ettiklerimiz</h2>
+ <h2>{de} şap nereye yaptırılır?</h2>
+ <p>{de} "şap yapan yer neresi, hangi ustaya vereyim" diye soruyorsanız cevabımız kısa: bize. {ad} şap ustası olarak
+ ekip ve makineyle adresinize geliyoruz; sizin bir yere gitmeniz gerekmiyor.</p>
+ <ol class="kisa-adim"><li><b>Arayın:</b> {TEL_G}</li><li><b>Mahalle, metrekare ve katı söyleyin.</b></li>
+ <li><b>Gün ve fiyatı netleştirelim.</b></li><li><b>Şapı atalım, kürünü anlatalım.</b></li></ol>
+ <h2>{ad} şap ustası olarak dikkat ettiklerimiz</h2>
  <p>{IKLIM[i["tip"]]}</p>
  <ul class="madde">{dk}</ul>
 </div></section>
 
-<section class="blok"><div class="ic">
- <h2>{ad} mahalleleri</h2>
+<section class="blok"><div class="ic dar">
+ <h2>{ad} şap fiyatları</h2>
+ <p>Fiyat aralığımız {de} de diğer ilçelerle aynı. Kesin rakamı metrekare ve iş koşullarını öğrenince veriyoruz.</p>
+ {fiyat_kutu()}
+ <p><a class="ok-link" href="{ic('maras-sap-fiyatlari/')}">Maraş şap fiyatları ve metrekare hesabı →</a></p>
+</div></section>
+
+<section class="blok acik"><div class="ic">
+ <h2>{ad} mahallelerinde şapçı</h2>
  <p class="bolum-giris">{ad} ilçesinde aşağıdaki {len(mah)} mahallenin hepsine geliyoruz. Mahallenizi yazmanız yeterli.</p>
  <ul class="mahalle">{mh}</ul>
 </div></section>
 
-<section class="blok acik"><div class="ic">
- <h2>{ad} şap işlerinden fotoğraflar</h2>
- {galeri(foto[1:] + [sira[(n * 3 + 3) % len(sira)]])}
+<section class="blok"><div class="ic">
+ <h2>Şap işlerimizden fotoğraflar</h2>
+ {galeri(foto[1:] + [sira[(n * 3 + 4) % len(sira)]])}
 </div></section>
 
-<section class="blok"><div class="ic dar">
+<section class="blok acik"><div class="ic dar">
  <h2>Sık sorulan sorular</h2>
  {sss_html(sss)}
  <h2>Yakın ilçeler</h2>
- <ul class="komsu">{komsu}<li><a href="{ic('maras-sap-fiyatlari/')}">Maraş şap fiyatları</a></li>
- <li><a href="{ic('sap-atmadan-once/')}">Şap atmadan önce</a></li></ul>
+ <ul class="komsu">{komsu}</ul>
+ <h3 class="ag-bas">Kahramanmaraş'ın diğer ilçelerinde şap ustası</h3>
+ {ag(i, n0=n + 1)}
+ <p><a class="ok-link" href="{ic('sap-turleri/')}">Şap türleri ve şap yaptırma rehberi →</a> &nbsp;
+ <a class="ok-link" href="{ic('sap-atmadan-once/')}">Şap atmadan önce →</a></p>
 </div></section>
-""" + cta_bant(f"{i['de']} şap için fiyat alın") + son()
+""" + cta_bant(f"{de} şap için hemen arayın") + son()
 
 
 def sayfa_404():
@@ -561,7 +735,7 @@ def main():
         global ONEK
         ONEK = "../" * yol.count("/") if yol else ""
         S[(yol + "index.html") if yol else "index.html"] = fn(*a)
-    yaz("", anasayfa); yaz("maras-sap-fiyatlari/", fiyat_sayfasi); yaz("sap-atmadan-once/", rehber)
+    yaz("", anasayfa); yaz("maras-sap-fiyatlari/", fiyat_sayfasi); yaz("sap-atmadan-once/", rehber); yaz("sap-turleri/", turler)
     for i in ILCELER: yaz(i["slug"] + "/", ilce_sayfasi, i)
     S["404.html"] = sayfa_404()
     h = denetle(S)

@@ -21,7 +21,7 @@ BUGUN = "2026-10-21"            # yayın tarihi SABİT
 FIYAT_TARIH = "Ekim 2026"
 ISCILIK = (70, 100)             # TL/m² — kullanıcı 2026-10-21
 MALZEMELI = (300, 350)          # TL/m² malzemeli + faturalı
-SURUM = "3"
+SURUM = "4"
 YASAK = ["en ucuz", "garanti", "1 numara", "bir numaralı", "%100", "lider"]
 VERI_KAYNAK = "/root/yanimdaevdesaglik_repo/_src/data/turkiye_ilce_mahalle.json"
 VERI = os.path.join(KOK, "_src/data/mahalleler.json")
@@ -313,6 +313,7 @@ def anasayfa():
  yapacağınızı bilmiyorsanız da sorun değil; arayın, birlikte bakalım.</p>
  <ol class="kisa-adim"><li><b>Arayın ya da yazın:</b> {TEL_G}</li><li><b>İlçe, metrekare ve katı söyleyin.</b></li>
  <li><b>Gün ve fiyatı birlikte netleştirelim.</b></li><li><b>Ekip ve makine adresinize gelsin.</b></li></ol>
+ <a class="afis-link" href="tel:{TEL}" aria-label="Maraş Şapçı'yı arayın: {TEL_G}">{resim("maras-sap-ustasi", "afis-img", sizes="(max-width: 820px) 100vw, 780px")}<span class="afis-cta">Dokunun, hemen arayalım</span></a>
 </div></section>
 
 <section class="blok koyu"><div class="ic">

@@ -248,3 +248,9 @@ th{background:var(--koyu);color:#fff;font-weight:600}
 .sb-gorsel{margin:0;min-width:0}
 .sb-img{width:100%;aspect-ratio:1690/931;object-fit:cover;border-radius:var(--r);box-shadow:0 18px 40px -18px rgba(28,33,36,.45)}
 @media (max-width:900px){.sb-izgara{grid-template-columns:1fr;gap:24px}}
+
+/* anasayfa tıklanınca arayan afiş */
+.afis-link{display:block;position:relative;margin-top:28px;border-radius:var(--r);overflow:hidden;box-shadow:0 18px 40px -18px rgba(28,33,36,.45)}
+.afis-img{width:100%;aspect-ratio:1690/931;object-fit:cover;transition:transform .5s}
+.afis-link:hover .afis-img{transform:scale(1.025)}
+.afis-cta{position:absolute;right:14px;bottom:14px;padding:8px 14px;border-radius:999px;background:var(--vurgu);color:var(--koyu);font-weight:700;font-size:.92rem;box-shadow:0 6px 16px rgba(0,0,0,.25)}

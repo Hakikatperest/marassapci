@@ -21,7 +21,7 @@ BUGUN = "2026-10-21"            # yayın tarihi SABİT
 FIYAT_TARIH = "Ekim 2026"
 ISCILIK = (70, 100)             # TL/m² — kullanıcı 2026-10-21
 MALZEMELI = (300, 350)          # TL/m² malzemeli + faturalı
-SURUM = "2"
+SURUM = "3"
 YASAK = ["en ucuz", "garanti", "1 numara", "bir numaralı", "%100", "lider"]
 VERI_KAYNAK = "/root/yanimdaevdesaglik_repo/_src/data/turkiye_ilce_mahalle.json"
 VERI = os.path.join(KOK, "_src/data/mahalleler.json")
@@ -192,7 +192,9 @@ def son():
 </div>
 <div class="w4"><div class="w4-bag"><span class="w4-etiket">Web Tasarım:</span> <a class="w4-ad" href="https://www.web4medya.com/" target="_blank" rel="noopener">Web<span class="w4-d">4</span>Medya</a></div></div>
 </footer>
-<div class="dock"><a href="tel:{TEL}" class="dock-ara">Hemen Ara</a><a href="https://wa.me/{WA}" class="dock-wa" target="_blank" rel="noopener">WhatsApp</a></div>
+<div class="dock" id="dock"><a class="dock-tel" href="tel:{TEL}"><small>Şap ustası hattı</small><span>{TEL_G}</span></a>
+<a class="dock-ik dock-wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="WhatsApp'tan yaz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3Z"/></svg></a>
+<a class="dock-ik dock-ara" href="tel:{TEL}" aria-label="Hemen ara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg></a></div>
 <script src="{ic('assets/site.js')}?v={SURUM}" defer></script>
 </body>
 </html>

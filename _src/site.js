@@ -30,6 +30,16 @@
     x.focus();
   });
 
+  var dock = document.getElementById("dock");
+  if (dock) {
+    var esik = function () { var hr = document.querySelector(".hero, .sayfa-bas"); return hr ? hr.offsetTop + hr.offsetHeight - 80 : 300; };
+    var bak = function () {
+      var y = window.scrollY, dip = document.documentElement.scrollHeight - (y + window.innerHeight);
+      dock.classList.toggle("gor", y > esik() && dip > 260);
+    };
+    window.addEventListener("scroll", bak, { passive: true }); window.addEventListener("resize", bak); bak();
+  }
+
   var h = document.getElementById("hesap");
   if (h) {
     var g = document.getElementById("m2"), d = h.dataset;

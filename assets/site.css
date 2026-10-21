@@ -255,3 +255,13 @@ th{background:var(--koyu);color:#fff;font-weight:600}
 .afis-link:hover .afis-img{transform:scale(1.025)}
 .afis-cta{position:absolute;right:14px;bottom:14px;padding:8px 14px;border-radius:999px;background:var(--vurgu);color:var(--koyu);font-weight:700;font-size:.92rem;box-shadow:0 6px 16px rgba(0,0,0,.25)}
 .cta p a{color:var(--koyu);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* masaüstünde iki sütun: metin + görsel/kutu/SSS (dar orta sütun yerine) */
+.iki{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:start}
+.kol{min-width:0}
+.kol>:first-child{margin-top:0}
+.kol .galeri{grid-template-columns:1fr 1fr;margin-top:0}
+.kol .tek-gorsel,.kol .afis-link{margin-top:0}
+.kol .fiyat-kutu{margin-top:0}
+.kol>p:not([class]){max-width:68ch}
+@media (max-width:900px){.iki{grid-template-columns:1fr;gap:28px}}
